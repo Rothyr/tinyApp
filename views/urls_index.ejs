@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <header>
+      <% include partials/_header%>
+    </header>
+
+
+  <body>
+
+    <ul>
+      <% for (var URL in urls) { %>
+        <li> <%= URL%> : <%= urls[URL] %> </li>
+      <% }; %>
+    </ul>
+
+    <a href="/"> Generate Shortened URLS </a>
+
+  </body>
+
+</html>
