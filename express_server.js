@@ -22,6 +22,15 @@ app.get("/urls", (request, response) => {
   response.render("urls_index", templateVars);
 });
 
+app.get("/urls/new", (req, res) => {
+  res.render("urls_new");
+});
+
+app.post("/urls", (req, res) => {
+  console.log(req.body);  // debug statement to see POST parameters
+  res.send("Ok");         // Respond with 'Ok' (we will replace this)
+});
+
 app.get("/urls/:id", (request, response) => {
 
   let templateVars = {
@@ -36,6 +45,9 @@ app.get("/urls/:id", (request, response) => {
 app.get("/hello", (request, response) => {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
+const bodyParser = require("body-parser");
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
