@@ -1,7 +1,10 @@
 var express = require("express");
 var app = express();
+const bodyParser = require("body-parser");
 var PORT = 8080;
 
+
+app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
 //  SERVER SIDE //
@@ -28,9 +31,25 @@ app.get("/urls/new", (request, response) => {
   response.render("urls_new");
 });
 
+// CREATES LONG & SHORT URLS IN URL DATABASE //
+
 app.post("/urls", (request, response) => {
   console.log(request.body);
-  response.send("Ok");
+  var longURL = request.body.longURL;
+  var shortURL = generateRandomString();
+  urlDatabase[shortURL] = longURL;
+  response.redirect(`/urls/${shortURL}`)
+});
+
+//  REDIRECTS SHORT URL TO WEBSITE //
+
+app.get("/u/:shortURL", (request, response) => {
+  var shortURL = request.params.shortURL;
+  var longURL = urlDatabase[shortURL];
+  response.redirect(longURL);
+});
+
+// DISPLAYS LONG & SHORT URLS
 
 app.get("/urls/:id", (request, response) => {
 
@@ -38,7 +57,6 @@ app.get("/urls/:id", (request, response) => {
     shortURL: request.params.id,
     longURL: urlDatabase[request.params.id]
   };
-
   response.render("urls_show", templateVars);
 });
 
@@ -47,8 +65,6 @@ app.get("/hello", (request, response) => {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
@@ -58,9 +74,7 @@ app.listen(PORT, () => {
 // STRING GENERATOR //
 
 function generateRandomString() {
-  return Math.floor((1 + Math.random()) * 0x100000).toString(36);
-
-
+  return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
 };
 
 
