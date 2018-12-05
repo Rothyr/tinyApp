@@ -8,13 +8,28 @@
 
   <body>
 
-    <ul>
+    <table>
       <% for (var URL in urls) { %>
-        <li> <%= URL%> : <%= urls[URL] %> </li>
+        <tr>
+          <td><strong>Shortened URL &#8594;</strong> </td>
+          <td><strong>Original URL</strong></td>
+          <td><strong>Actions</strong></td>
+        </tr>
+        <tr>
+          <td><%= URL%> &#8594; </td>
+          <td><%= urls[URL] %> </td>
+          <td>
+            <a href="/urls/ <%= URL %>">Edit</a>
+            <form method="POST" action="/urls/<%= URL %>/delete"><input type="submit" value="Delete"> </form>
+          </td>
+        </tr>
       <% }; %>
-    </ul>
 
+    </table>
+
+  </br >
     <a href="/"> Generate Shortened URLS </a>
+
 
   </body>
 

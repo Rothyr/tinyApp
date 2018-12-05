@@ -33,11 +33,19 @@ app.get("/urls/new", (request, response) => {
 // CREATES LONG & SHORT URLS IN URL DATABASE //
 
 app.post("/urls", (request, response) => {
-  console.log(request.body);
   var longURL = request.body.longURL;
   var shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
   response.redirect(`/urls/${shortURL}`)
+});
+
+// UPDATE URLS //
+
+app.post("/urls/:id/update", (request, response) => {
+  var longURL = request.body.longURL;
+  var shortURL = request.params.id
+  urlDatabase[shortURL] = longURL;
+  response.redirect(`/urls`)
 });
 
 //  REDIRECTS SHORT URL TO WEBSITE //
@@ -48,7 +56,7 @@ app.get("/u/:shortURL", (request, response) => {
   response.redirect(longURL);
 });
 
-// DISPLAYS LONG & SHORT URLS
+// DISPLAYS LONG & SHORT URLS //
 
 app.get("/urls/:id", (request, response) => {
 
@@ -57,6 +65,14 @@ app.get("/urls/:id", (request, response) => {
     longURL: urlDatabase[request.params.id]
   };
   response.render("urls_show", templateVars);
+});
+
+// DELETES URLS //
+app.post('/urls/:id/delete', (request, response) => {
+  let shortURL = request.params.id;
+  delete urlDatabase[shortURL];
+
+  response.redirect('/urls');
 });
 
 app.get("/hello", (request, response) => {

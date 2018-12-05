@@ -6,14 +6,17 @@
 
     <body>
 
-    <h4>Short & Long URLs</h4>
+    <h1>Short URL &#8594; <%= shortURL %></h1>
 
-    <ul>
-      <li> Short URL: <%= "/urls/" + shortURL %></li>
-      <li> Long URL: <%= longURL %></li>
-    </ul>
+
+    <form action="/urls/<%= shortURL%>/update" method="POST">
+      <label for="longURL">Update</label>
+      <input id="longURL" type="text" name="longURL" placeholder="http://">
+      <input type="submit" value="Update">
+    </form>
 
 
     </body>
 
   </html>
+
