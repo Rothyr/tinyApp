@@ -3,7 +3,6 @@ var app = express();
 const bodyParser = require("body-parser");
 var PORT = 8080;
 
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
@@ -60,7 +59,6 @@ app.get("/urls/:id", (request, response) => {
   response.render("urls_show", templateVars);
 });
 
-
 app.get("/hello", (request, response) => {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
@@ -70,12 +68,13 @@ app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-
 // STRING GENERATOR //
 
 function generateRandomString() {
-  return Math.floor((1 + Math.random()) * 0x10000000).toString(36);
+  var string = "";
+  var allCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (var i = 0; i < 6; i++)
+    string += allCharacters.charAt(Math.floor(Math.random() * allCharacters.length));
+  return string;
 };
-
-
 
