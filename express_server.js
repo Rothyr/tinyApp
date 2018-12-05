@@ -4,12 +4,6 @@ var PORT = 8080;
 
 app.set("view engine", "ejs");
 
-// STRING GENERATOR //
-
-function generateRandomString() {
-
-}
-
 //  SERVER SIDE //
 
 var urlDatabase = {
@@ -59,3 +53,15 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
+
+// STRING GENERATOR //
+
+function generateRandomString() {
+  return Math.floor((1 + Math.random()) * 0x100000).toString(36);
+
+
+};
+
+
+
