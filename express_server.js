@@ -4,6 +4,14 @@ var PORT = 8080;
 
 app.set("view engine", "ejs");
 
+// STRING GENERATOR //
+
+function generateRandomString() {
+
+}
+
+//  SERVER SIDE //
+
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -22,14 +30,13 @@ app.get("/urls", (request, response) => {
   response.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  res.render("urls_new");
+app.get("/urls/new", (request, response) => {
+  response.render("urls_new");
 });
 
-app.post("/urls", (req, res) => {
-  console.log(req.body);  // debug statement to see POST parameters
-  res.send("Ok");         // Respond with 'Ok' (we will replace this)
-});
+app.post("/urls", (request, response) => {
+  console.log(request.body);
+  response.send("Ok");
 
 app.get("/urls/:id", (request, response) => {
 
