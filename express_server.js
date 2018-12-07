@@ -55,19 +55,6 @@ var urlDatabase = {
   }
 };
 
-function userURLs(id) {
-  let resultURLs = {};
-  for (let url in urlDatabase) {
-    if (id === urlDatabase[url].id) {
-      let temp = {
-        shortURL: url,
-        longURL: urlDatabase[url].longurl
-      }
-      resultURLs[url] = temp;
-    }
-  }
-  return resultURLs;
-};
 
  //  HELLO PAGE   //
 app.get("/", (request, response) => {
@@ -140,6 +127,7 @@ app.get("/urls", (request, response) => {
     urls: userURLs(request.cookies["id"]),
     user: userDatabase[request.cookies["id"]]
   };
+  console.log(templateVars);
   if (templateVars.user){
     response.render("urls_index", templateVars);
   } else {
@@ -163,7 +151,7 @@ app.get("/urls/new", (request, response) => {
 
 // CREATES LONG & SHORT URLS IN URL DATABASE //
 app.post("/urls", (request, response) => {
-  var longURL = request.body.longURL;
+  var longURL = request.body.longurl;
   var shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
   response.redirect(`/urls/${shortURL}`)
@@ -266,6 +254,18 @@ function findUserID(email) {
   }
 };
 
-
+function userURLs(userID) {
+  let resultURLs = {};
+  for (let url in urlDatabase) {
+    if (userID === urlDatabase[url].userID) {
+      let temp = {
+        shortURL: url,
+        longurl: urlDatabase[url].longurl
+      }
+      resultURLs[url] = temp;
+    }
+  }
+  return resultURLs;
+};
 
 
