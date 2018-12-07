@@ -5,22 +5,21 @@
     <title>TinyApp Exercise</title>
   </header>
 
-  <body leftmargin="100px", topmargin="100px">
+  <body leftmargin="100px", topmargin="100px" style="font-size:20px; padding:50px;">
 
-    <% if (username) { %>
-    <form action="/logout" method="POST">
-      <label for="Username">You are logged in as: <%= username %></label>
-      <input type="submit" value="Log Out">
-    </form>
+    <% if (user) { %>
+      <form action="/logout" method="POST">
+        <label for="email">You are logged in as: <%= user.email %></label>
+        <input type="submit" value="Log Out">
+      </form>
     <% } else { %>
-    <form action="/login" method="POST">
-      <label for="Username">Enter Username :</label>
-      <input type="text" name="username" placeholder="username">
-      <input type="submit" value="Log In">
-    </form>
+      <label for="email"> You are not currently logged in</label>
+      <button type="button"><a href="/login">Login</a></button>
+      <button type="button"><a href="/register">Register</a></button>
+
     <% } %>
 
-    <label> Welcome to TinyApp <%= username %>!</label>
+    <br >
 
   </body>
 
