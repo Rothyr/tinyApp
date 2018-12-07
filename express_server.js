@@ -4,10 +4,9 @@ const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const PORT = 8080;
 
-
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use(cookieParser())
+app.use(cookieParser());
 
 
 // TEST USER DATABASE //
@@ -37,42 +36,80 @@ const userDatabase = {
 
 //  TEST URL DATABASE //
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longurl: "http://www.lighthouselabs.ca",
+    userID: "userID1"
+  },
+  "9sm5xK": {
+    longurl: "http://www.google.com",
+    userID: "userID2"
+  },
+  "9sjhfK": {
+    longurl: "http://www.bbc.com",
+    userID: "userID2"
+  },
+
+  "9s345K": {
+    longurl: "http://www.lights.com",
+    userID: "userID2"
+  }
 };
 
+function userURLs(id) {
+  let resultURLs = {};
+  for (let url in urlDatabase) {
+    if (id === urlDatabase[url].id) {
+      let temp = {
+        shortURL: url,
+        longURL: urlDatabase[url].longurl
+      }
+      resultURLs[url] = temp;
+    }
+  }
+  return resultURLs;
+};
+
+ //  HELLO PAGE   //
+app.get("/", (request, response) => {
+  response.send("Hello!");
+});
+
+//        //
+app.get("/urls.json", (request, response) => {
+  response.json(urlDatabase);
+});
 
  // ALLOWS USER TO LOG-IN && LOG-OUT //;
 
  // LOG-IN
 app.get("/login", (request, response) => {
-  response.render("login");
+  let templateVars = {
+    user: userDatabase[request.cookies["id"]]
+  }
+  response.render("login", templateVars);
 });
 
 app.post("/login", (request, response) => {
  if (request.body.email === "" || request.body.password === ""){
   response.send("Please provide an email and password");
  } else if (checkLogin(request)) {
-    response.cookie("id", findUserID(request));
+    response.cookie("id", findUserID(request.body.email));
     response.redirect("/urls/");
   } else {
     response.send("Invalid username or password")
-
   }
 });
 
 // LOG OUT
 app.post("/logout", (request, response) => {
-  var email = request.body.email;
-  response.clearCookie("id", email);
-  response.redirect("/urls/");
+  response.clearCookie("id");
+  response.redirect("/login");
 });
 
 
 // REGISTRATION PAGE //
 
 app.get("/register", (request, response) => {
-
   response.render("register");
 });
 
@@ -97,34 +134,31 @@ app.post("/register", (request, response) => {
   }
 });
 
-
- //  HELLO PAGE   //
-app.get("/", (request, response) => {
-  response.send("Hello!");
-});
-
-//        //
-app.get("/urls.json", (request, response) => {
-  response.json(urlDatabase);
-});
-
 // URLS PAGE  //
 app.get("/urls", (request, response) => {
-  let userId = request.cookies["id"]; // note: might be nothing there, and/or garbage
-  let userObject = userDatabase[userId];
   let templateVars = {
-    urls: urlDatabase,
-    user: userObject
+    urls: userURLs(request.cookies["id"]),
+    user: userDatabase[request.cookies["id"]]
   };
-  response.render("urls_index", templateVars);
+  if (templateVars.user){
+    response.render("urls_index", templateVars);
+  } else {
+    response.redirect("/login");
+  }
 });
+
+
 
 //  NEW URLS PAGE  //
 app.get("/urls/new", (request, response) => {
   let templateVars = {
-    user: userObject
-  };
-  response.render("urls_new", templateVars);
+    user: userDatabase[request.cookies["id"]]
+  }
+  if (templateVars.user) {
+    response.render("urls_new", templateVars);
+  } else {
+    response.redirect("/login");
+  }
 });
 
 // CREATES LONG & SHORT URLS IN URL DATABASE //
@@ -138,35 +172,48 @@ app.post("/urls", (request, response) => {
 // UPDATE URLS //
 app.post("/urls/:id/update", (request, response) => {
   var longURL = request.body.longURL;
-  var shortURL = request.params.id
-  urlDatabase[shortURL] = longURL;
-  response.redirect("/urls")
+  var shortURL = request.params.id;
+    if (request.cookies["id"]) {
+      if(request.cookies["id"] === urlDatabase[request.params.id].userID){
+         urlDatabase[shortURL].longurl = longURL;
+         response.redirect('/urls');
+      } else {
+        response.send("Sorry the URL does not belong to you");
+      }
+    } else {
+      response.send("You must be logged in");
+    }
 });
 
 //  REDIRECTS SHORT URL TO ORIGINAL WEBSITE //
 app.get("/u/:shortURL", (request, response) => {
   var shortURL = request.params.shortURL;
-  var longURL = urlDatabase[shortURL];
+  var longURL = urlDatabase[shortURL].longurl;
   response.redirect(longURL);
 });
 
 // DISPLAYS LONG & SHORT URLS //
 app.get("/urls/:id", (request, response) => {
-
   let templateVars = {
     shortURL: request.params.id,
-    longURL: urlDatabase[request.params.id],
-    user: userObject
+    longURL: urlDatabase[request.params.id].longurl,
+    user: userDatabase[request.cookies["id"]]
   };
   response.render("urls_show", templateVars);
 });
 
 // DELETES URLS //
 app.post('/urls/:id/delete', (request, response) => {
-  let shortURL = request.params.id;
-  delete urlDatabase[shortURL];
-
-  response.redirect('/urls');
+  if (request.cookies["id"]) {
+    if(request.cookies["id"] === urlDatabase[request.params.id].userID){
+       delete urlDatabase[request.params.id];
+       response.redirect('/urls');
+    } else {
+      response.send("Sorry the URL does not belong to you");
+    }
+  } else {
+    response.send("You must be logged in");
+  }
 });
 
 // DISPLAYS "HELLO" PAGE  //
@@ -198,7 +245,7 @@ function checkEmailAddress(request) {
     }
   }
   return false;
-}
+};
 
 function checkLogin(request) {
   let email = request.body.email;
@@ -209,15 +256,16 @@ function checkLogin(request) {
     }
   }
   return false;
-}
+};
 
-function findUserID(request) {
-  let email = request.body.email;
+function findUserID(email) {
   for (let key in userDatabase) {
     if (email === userDatabase[key].email) {
       return userDatabase[key].id;
     }
   }
-}
+};
+
+
 
 

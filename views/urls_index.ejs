@@ -9,26 +9,27 @@
   <body leftmargin="100px", topmargin="100px" style="font-size:20px; padding:50px;">
 
     <table>
-      <% for (var URL in urls) { %>
         <tr>
           <td><strong>Shortened URL &#8594;</strong> </td>
           <td><strong>Original URL</strong></td>
           <td><strong>Actions</strong></td>
         </tr>
+      <% for (var URL in urls) { %>
         <tr>
-          <td><%= URL%> &#8594; </td>
-          <td><%= urls[URL] %> </td>
+          <td><%= URL %> &#8594; </td>
+          <td><%= urls[URL].longurl %> </td>
           <td>
-            <a href="/urls/ <%= URL %>">Edit</a>
-            <form method="POST" action="/urls/<%= URL %>/delete"><input type="submit" value="Delete"> </form>
+            <a href="/urls/<%= URL %>">Edit</a>
+            <form method="POST" action="/urls/<%= URL %>/delete">
+              <input type="submit" value="Delete"> </form>
           </td>
         </tr>
-      <% }; %>
+      <% } %>
 
     </table>
 
   </br >
-    <a href="/"> Generate Shortened URLS </a>
+    <a href="/urls/new"> Generate Shortened URLS </a>
 
 
   </body>
