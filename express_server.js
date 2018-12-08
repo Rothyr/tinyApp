@@ -1,13 +1,16 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const bcrypt = require("bcrypt");
 const PORT = 8080;
 
-app.set("view engine", "ejs");
-app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
+app.set("view engine", "ejs");
+app.use(cookieSession ( {
+  name: "session",
+  keys: ['user_id']
+}));
 
 // TEST USER DATABASE //
 
@@ -71,7 +74,7 @@ app.get("/urls.json", (request, response) => {
  // LOG-IN
 app.get("/login", (request, response) => {
   let templateVars = {
-    user: userDatabase[request.cookies["id"]]
+    user: userDatabase[request.session["user_id"]]
   }
   response.render("login", templateVars);
 });
@@ -80,7 +83,7 @@ app.post("/login", (request, response) => {
  if (request.body.email === "" || request.body.password === ""){
   response.send("Please provide an email and password");
  } else if (checkLogin(request)) {
-    response.cookie("id", findUserID(request.body.email));
+    request.session.id = findUserID(request.body.email);
     response.redirect("/urls/");
   } else {
     response.send("Invalid username or password")
@@ -89,7 +92,7 @@ app.post("/login", (request, response) => {
 
 // LOG OUT
 app.post("/logout", (request, response) => {
-  response.clearCookie("id");
+  request.session = null
   response.redirect("/login");
 });
 
@@ -114,20 +117,19 @@ app.post("/register", (request, response) => {
     userDatabase[newUserID] = {
       "id": newUserID,
       "email": request.body.email,
-      "password": request.body.password,
+      "password": bcrypt.hashSync(request.body.password, 12),
     }
-    response.cookie("id", newUserID)
-    response.redirect("/urls/")
+    request.session["user_id"] = userDatabase[newUserID].id;
+    response.redirect("/urls/");
   }
 });
 
 // URLS PAGE  //
 app.get("/urls", (request, response) => {
   let templateVars = {
-    urls: userURLs(request.cookies["id"]),
-    user: userDatabase[request.cookies["id"]]
+    urls: userURLs(request.session["user_id"]),
+    user: userDatabase[request.session["user_id"]]
   };
-  console.log(templateVars);
   if (templateVars.user){
     response.render("urls_index", templateVars);
   } else {
@@ -140,7 +142,7 @@ app.get("/urls", (request, response) => {
 //  NEW URLS PAGE  //
 app.get("/urls/new", (request, response) => {
   let templateVars = {
-    user: userDatabase[request.cookies["id"]]
+    user: userDatabase[request.session["user_id"]]
   }
   if (templateVars.user) {
     response.render("urls_new", templateVars);
@@ -151,9 +153,12 @@ app.get("/urls/new", (request, response) => {
 
 // CREATES LONG & SHORT URLS IN URL DATABASE //
 app.post("/urls", (request, response) => {
-  var longURL = request.body.longurl;
+  var longURL = request.body.longURL;
   var shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
+  urlDatabase[shortURL] = {
+    longurl: longURL,
+    userID: request.session["user_id"]
+  }
   response.redirect(`/urls/${shortURL}`)
 });
 
@@ -161,8 +166,8 @@ app.post("/urls", (request, response) => {
 app.post("/urls/:id/update", (request, response) => {
   var longURL = request.body.longURL;
   var shortURL = request.params.id;
-    if (request.cookies["id"]) {
-      if(request.cookies["id"] === urlDatabase[request.params.id].userID){
+    if (request.session["user_id"]) {
+      if(request.session["user_id"] === urlDatabase[request.params.id].userID){
          urlDatabase[shortURL].longurl = longURL;
          response.redirect('/urls');
       } else {
@@ -185,15 +190,16 @@ app.get("/urls/:id", (request, response) => {
   let templateVars = {
     shortURL: request.params.id,
     longURL: urlDatabase[request.params.id].longurl,
-    user: userDatabase[request.cookies["id"]]
+    user: userDatabase[request.session["user_id"]]
   };
+
   response.render("urls_show", templateVars);
 });
 
 // DELETES URLS //
 app.post('/urls/:id/delete', (request, response) => {
-  if (request.cookies["id"]) {
-    if(request.cookies["id"] === urlDatabase[request.params.id].userID){
+  if (request.session["user_id"]) {
+    if(request.session["user_id"] === urlDatabase[request.params.id].userID){
        delete urlDatabase[request.params.id];
        response.redirect('/urls');
     } else {
@@ -239,7 +245,7 @@ function checkLogin(request) {
   let email = request.body.email;
   let password = request.body.password;
   for (let key in userDatabase) {
-    if (password === userDatabase[key].password && email.toLowerCase() === userDatabase[key].email.toLowerCase()) {
+    if (bcrypt.compareSync(password, userDatabase[key].password) && email.toLowerCase() === userDatabase[key].email.toLowerCase()) {
       return true;
     }
   }
