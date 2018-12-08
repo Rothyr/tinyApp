@@ -59,16 +59,17 @@ var urlDatabase = {
   }
 };
 
+// REDIRECT TO LOGIN PAGE //
 app.get("/", (request, response) => {
   response.redirect("/login");
 });
 
+// JSON //
 app.get("/urls.json", (request, response) => {
   response.json(urlDatabase);
 });
 
-
- // ALLOWS USER TO LOG-IN && LOG-OUT //;
+ //  **  ALLOWS USER TO LOG-IN && LOG-OUT  **  //;
  // LOG-IN
 app.get("/login", (request, response) => {
   let templateVars = {
@@ -94,9 +95,9 @@ app.post("/logout", (request, response) => {
   response.redirect("/login");
 });
 
+//  **  END OF LOGIN/LOGOUT SECTION  **  //
 
 // REGISTRATION PAGE //
-
 app.get("/register", (request, response) => {
   response.render("register");
 });
@@ -134,8 +135,6 @@ app.get("/urls", (request, response) => {
     response.redirect("/login");
   }
 });
-
-
 
 //  NEW URLS PAGE  //
 app.get("/urls/new", (request, response) => {
@@ -214,11 +213,12 @@ app.get("/hello", (request, response) => {
 });
 
 // LOGS A MESSAGE TO NODE DECLARING THE SERVER IS WORKING  //
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
+
+// ** FUNCTIONS USED THROUGHOUT TINY APP ** //
 // STRING GENERATOR //
 function generateRandomString() {
   var string = "";
@@ -228,7 +228,7 @@ function generateRandomString() {
   return string;
 };
 
-
+// CHECK EMAIL ADDRESS IN USE //
 function checkEmailAddress(request) {
   let email = request;
   for (let key in userDatabase) {
@@ -239,6 +239,7 @@ function checkEmailAddress(request) {
   return false;
 };
 
+//CHECK LOGIN IS VALID USER //
 function checkLogin(request) {
   let email = request.body.email;
   let password = request.body.password;
@@ -250,6 +251,7 @@ function checkLogin(request) {
   return false;
 };
 
+// SEARCH IF EMAIL IS ALREADY VALID ACCOUNT //
 function findUserID(email) {
   for (let key in userDatabase) {
     if (email === userDatabase[key].email) {
@@ -258,6 +260,7 @@ function findUserID(email) {
   }
 };
 
+// SEARCH THROUGH URLDATABASE AND LINK ACCOUNTS TO URLS //
 function userURLs(userID) {
   let resultURLs = {};
   for (let url in urlDatabase) {
