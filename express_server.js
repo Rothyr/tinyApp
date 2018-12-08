@@ -128,7 +128,7 @@ app.get("/urls", (request, response) => {
   let templateVars = {
     urls: userURLs(request.session["user_id"]),
     user: userDatabase[request.session["user_id"]]
-  };
+  }
   if (templateVars.user){
     response.render("urls_index", templateVars);
   } else {
@@ -164,7 +164,7 @@ app.post("/urls/:id/update", (request, response) => {
   var longURL = request.body.longURL;
   var shortURL = request.params.id;
     if (request.session["user_id"]) {
-      if(request.session["user_id"] === urlDatabase[request.params.id].userID){
+      if(request.session["user_id"] === urlDatabase[request.params.id].userID) {
          urlDatabase[shortURL].longurl = longURL;
          response.redirect('/urls');
       } else {
@@ -189,7 +189,6 @@ app.get("/urls/:id", (request, response) => {
     longURL: urlDatabase[request.params.id].longurl,
     user: userDatabase[request.session["user_id"]]
   };
-
   response.render("urls_show", templateVars);
 });
 
@@ -223,7 +222,7 @@ app.listen(PORT, () => {
 function generateRandomString() {
   var string = "";
   var allCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (var i = 0; i < 6; i++)
+  for (var i = 0; i < 6; i++);
     string += allCharacters.charAt(Math.floor(Math.random() * allCharacters.length));
   return string;
 };
