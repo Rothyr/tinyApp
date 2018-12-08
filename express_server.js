@@ -12,8 +12,8 @@ app.use(cookieSession ( {
   keys: ['user_id']
 }));
 
-// TEST USER DATABASE //
 
+// TEST USER DATABASE //
 const userDatabase = {
   "userID1" : {
     id: "userID1",
@@ -37,6 +37,7 @@ const userDatabase = {
   }
 }
 
+
 //  TEST URL DATABASE //
 var urlDatabase = {
   "b2xVn2": {
@@ -58,19 +59,16 @@ var urlDatabase = {
   }
 };
 
-
- //  HELLO PAGE   //
 app.get("/", (request, response) => {
-  response.send("Hello!");
+  response.redirect("/login");
 });
 
-//        //
 app.get("/urls.json", (request, response) => {
   response.json(urlDatabase);
 });
 
- // ALLOWS USER TO LOG-IN && LOG-OUT //;
 
+ // ALLOWS USER TO LOG-IN && LOG-OUT //;
  // LOG-IN
 app.get("/login", (request, response) => {
   let templateVars = {
