@@ -61,6 +61,7 @@ var urlDatabase = {
 
 // REDIRECT TO LOGIN PAGE //
 app.get("/", (request, response) => {
+  response.send("Hello!");
   response.redirect("/login");
 });
 
@@ -82,7 +83,7 @@ app.post("/login", (request, response) => {
  if (request.body.email === "" || request.body.password === ""){
   response.send("Please provide an email and password");
  } else if (checkLogin(request)) {
-    request.session.id = findUserID(request.body.email);
+    request.session["user_id"] = findUserID(request.body.email);
     response.redirect("/urls/");
   } else {
     response.send("Invalid username or password")
@@ -245,9 +246,10 @@ function checkLogin(request) {
   for (let key in userDatabase) {
     if (bcrypt.compareSync(password, userDatabase[key].password) && email.toLowerCase() === userDatabase[key].email.toLowerCase()) {
       return true;
-    }
-  }
+    } else {
   return false;
+ }
+}
 };
 
 // SEARCH IF EMAIL IS ALREADY VALID ACCOUNT //
