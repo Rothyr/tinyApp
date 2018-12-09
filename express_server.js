@@ -1,3 +1,6 @@
+// ***  TINY APP EXPRESS_SERVER.JS  ***  //
+
+//  MIDDLEWARE USED IN TINY APP  //
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
@@ -12,56 +15,8 @@ app.use(cookieSession ( {
   keys: ['user_id']
 }));
 
-
-// TEST USER DATABASE //
-const userDatabase = {
-  "userID1" : {
-    id: "userID1",
-    email: "freddie@queen.com",
-    password: "queen123"
-  },
-  "userID2" : {
-    id: "userID2",
-    email: "mick@therollingstones.com",
-    password: "stones123"
-  },
-  "userID3" : {
-    id: "userID3",
-    email: "david@ziggystardust.com",
-    password: "ziggy123"
-  },
-  "userID4" : {
-    id: "userID4",
-    email: "roger@pinkfloyd.com",
-    password: "floyd123"
-  }
-}
-
-
-//  TEST URL DATABASE //
-var urlDatabase = {
-  "b2xVn2": {
-    longurl: "http://www.lighthouselabs.ca",
-    userID: "userID1"
-  },
-  "9sm5xK": {
-    longurl: "http://www.google.com",
-    userID: "userID2"
-  },
-  "9sjhfK": {
-    longurl: "http://www.bbc.com",
-    userID: "userID2"
-  },
-
-  "9s345K": {
-    longurl: "http://www.lights.com",
-    userID: "userID2"
-  }
-};
-
 // REDIRECT TO LOGIN PAGE //
 app.get("/", (request, response) => {
-  response.send("Hello!");
   response.redirect("/login");
 });
 
@@ -80,19 +35,19 @@ app.get("/login", (request, response) => {
 });
 
 app.post("/login", (request, response) => {
- if (request.body.email === "" || request.body.password === ""){
-  response.send("Please provide an email and password");
- } else if (checkLogin(request)) {
+  if (request.body.email === "" || request.body.password === "") {
+    response.send("Please provide an email and password");
+  } else if (checkLogin(request)) {
     request.session["user_id"] = findUserID(request.body.email);
     response.redirect("/urls/");
   } else {
-    response.send("Invalid username or password")
+    response.send("Invalid username or password");
   }
 });
 
 // LOG OUT
 app.post("/logout", (request, response) => {
-  request.session = null
+  request.session = null;
   response.redirect("/login");
 });
 
@@ -117,7 +72,7 @@ app.post("/register", (request, response) => {
     userDatabase[newUserID] = {
       "id": newUserID,
       "email": request.body.email,
-      "password": bcrypt.hashSync(request.body.password, 12),
+      "password": bcrypt.hashSync(request.body.password, 12)
     }
     request.session["user_id"] = userDatabase[newUserID].id;
     response.redirect("/urls/");
@@ -130,7 +85,7 @@ app.get("/urls", (request, response) => {
     urls: userURLs(request.session["user_id"]),
     user: userDatabase[request.session["user_id"]]
   }
-  if (templateVars.user){
+  if (templateVars.user) {
     response.render("urls_index", templateVars);
   } else {
     response.redirect("/login");
@@ -160,20 +115,19 @@ app.post("/urls", (request, response) => {
   response.redirect(`/urls/${shortURL}`)
 });
 
-// UPDATE URLS //
-app.post("/urls/:id/update", (request, response) => {
-  var longURL = request.body.longURL;
-  var shortURL = request.params.id;
-    if (request.session["user_id"]) {
-      if(request.session["user_id"] === urlDatabase[request.params.id].userID) {
-         urlDatabase[shortURL].longurl = longURL;
-         response.redirect('/urls');
-      } else {
-        response.send("Sorry the URL does not belong to you");
-      }
-    } else {
-      response.send("You must be logged in");
-    }
+// DISPLAYS LONG & SHORT URLS //
+app.get("/urls/:id", (request, response) => {
+  let templateVars = {
+    shortURL: request.params.id,
+    longURL: urlDatabase[request.params.id].longurl,
+    user: userDatabase[request.session["user_id"]]
+  };
+  if (ownURL(request)) {
+    response.render("urls_show", templateVars);
+  } else {
+    response.status(400);
+    response.send("You do not own this URL");
+  }
 });
 
 //  REDIRECTS SHORT URL TO ORIGINAL WEBSITE //
@@ -183,22 +137,28 @@ app.get("/u/:shortURL", (request, response) => {
   response.redirect(longURL);
 });
 
-// DISPLAYS LONG & SHORT URLS //
-app.get("/urls/:id", (request, response) => {
-  let templateVars = {
-    shortURL: request.params.id,
-    longURL: urlDatabase[request.params.id].longurl,
-    user: userDatabase[request.session["user_id"]]
-  };
-  response.render("urls_show", templateVars);
+// UPDATE URLS //
+app.post("/urls/:id/update", (request, response) => {
+  var longURL = request.body.longURL;
+  var shortURL = request.params.id;
+  if (request.session["user_id"]) {
+    if(request.session["user_id"] === urlDatabase[request.params.id].userID) {
+      urlDatabase[shortURL].longurl = longURL;
+      response.redirect('/urls');
+    } else {
+      response.send("Sorry the URL does not belong to you");
+    }
+  } else {
+    response.send("You must be logged in");
+  }
 });
 
 // DELETES URLS //
 app.post('/urls/:id/delete', (request, response) => {
   if (request.session["user_id"]) {
-    if(request.session["user_id"] === urlDatabase[request.params.id].userID){
-       delete urlDatabase[request.params.id];
-       response.redirect('/urls');
+    if(request.session["user_id"] === urlDatabase[request.params.id].userID) {
+      delete urlDatabase[request.params.id];
+      response.redirect('/urls');
     } else {
       response.send("Sorry the URL does not belong to you");
     }
@@ -212,19 +172,15 @@ app.get("/hello", (request, response) => {
   response.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
-// LOGS A MESSAGE TO NODE DECLARING THE SERVER IS WORKING  //
-app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
-});
-
 
 // ** FUNCTIONS USED THROUGHOUT TINY APP ** //
 // STRING GENERATOR //
 function generateRandomString() {
   var string = "";
   var allCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  for (var i = 0; i < 6; i++);
+  for (var i = 0; i < 6; i++) {
     string += allCharacters.charAt(Math.floor(Math.random() * allCharacters.length));
+  }
   return string;
 };
 
@@ -246,10 +202,9 @@ function checkLogin(request) {
   for (let key in userDatabase) {
     if (bcrypt.compareSync(password, userDatabase[key].password) && email.toLowerCase() === userDatabase[key].email.toLowerCase()) {
       return true;
-    } else {
+    }
+  }
   return false;
- }
-}
 };
 
 // SEARCH IF EMAIL IS ALREADY VALID ACCOUNT //
@@ -275,5 +230,66 @@ function userURLs(userID) {
   }
   return resultURLs;
 };
+
+//  FUNCTION USED TO CHECK CORRECT URL BELONGS TO THE CORRECT OWNER  //
+function ownURL (request) {
+  let user = request.session["user_id"];
+  let shortURL = request.params.id;
+  if (urlDatabase[shortURL].userID === user) {
+    return true;
+  }
+  return false;
+};
+
+// ***  USER DATABASE - FOR TEST PURPOSES ONLY  ***  //
+const userDatabase = {
+  "userID1" : {
+    id: "userID1",
+    email: "freddie@queen.com",
+    password: "queen123"
+  },
+  "userID2" : {
+    id: "userID2",
+    email: "mick@therollingstones.com",
+    password: "stones123"
+  },
+  "userID3" : {
+    id: "userID3",
+    email: "david@ziggystardust.com",
+    password: "ziggy123"
+  },
+  "userID4" : {
+    id: "userID4",
+    email: "roger@pinkfloyd.com",
+    password: "floyd123"
+  }
+}
+
+// ***  URL DATABASE - FOR TEST PURPOSES ONLY  ***  //
+var urlDatabase = {
+  "b2xVn2": {
+    longurl: "http://www.lighthouselabs.ca",
+    userID: "userID1"
+  },
+  "9sm5xK": {
+    longurl: "http://www.google.com",
+    userID: "userID2"
+  },
+  "9sjhfK": {
+    longurl: "http://www.bbc.com",
+    userID: "userID2"
+  },
+
+  "9s345K": {
+    longurl: "http://www.lights.com",
+    userID: "userID2"
+  }
+};
+
+
+// LOGS A MESSAGE TO NODE DECLARING THE SERVER IS WORKING  //
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}!`);
+});
 
 
