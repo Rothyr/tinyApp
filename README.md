@@ -9,7 +9,7 @@ Non-users are able to be redirected to the long URL.
 
 ## Screeenshots
 !["Screenshot of the URLs page"](https://github.com/Rothyr/tinyApp/blob/master/docs/tinyApp-Urls-Page.png)
-!["Screenshot of the login page, with a notice requiring a valid email address"]("https://github.com/Rothyr/tinyApp/blob/master/docs/tinyApp-Login-Page.png")
+!["Screenshot of the login page, with a notice requiring a valid email address"](https://github.com/Rothyr/tinyApp/blob/master/docs/tinyApp-Login-Page.png)
 
 ## Dependncies
 - Node.js
